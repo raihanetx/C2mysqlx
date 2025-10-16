@@ -52,6 +52,13 @@ $product_slug_map = [];
 $category_slug_map = [];
 $static_pages = ['cart', 'checkout', 'order-history', 'products', 'about-us', 'privacy-policy', 'terms-and-conditions', 'refund-policy'];
 
+// Load pages content from the database
+$pages_content_raw = $pdo->query("SELECT page_slug, content FROM pages")->fetchAll(PDO::FETCH_KEY_PAIR);
+$pages_content = [];
+foreach ($pages_content_raw as $slug => $content) {
+    $pages_content[$slug] = $content;
+}
+
 $categories = $pdo->query("SELECT id, name, slug, icon FROM categories ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC);
 foreach ($categories as $category) {
     $all_categories[] = ['name' => $category['name'], 'slug' => $category['slug'], 'icon' => $category['icon']];
@@ -849,139 +856,25 @@ if ($request_path) {
                 
                 <div v-if="currentView === 'aboutUs'" class="bg-white min-h-screen">
                     <div class="container mx-auto max-w-4xl p-6 md:p-12">
-                        <div class="space-y-8">
-                            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 text-center border-b pb-4">আমাদের সম্পর্কে (About Us) – Submonth</h1>
-                            <p class="text-lg text-gray-700 leading-relaxed">Submonth হল একটি উদ্ভাবনী ডিজিটাল প্ল্যাটফর্ম, যেখানে আপনি পেতে পারেন শিক্ষনীয় এবং প্রাত্যহিক জীবনের জন্য গুরুত্বপূর্ণ বিভিন্ন ডিজিটাল পণ্য ও পরিষেবা।</p>
-                            <div>
-                                <h2 class="text-2xl font-bold text-gray-800 mb-4">আমরা কী করি:</h2>
-                                <ul class="list-disc list-inside space-y-2 text-gray-700 pl-4">
-                                    <li><strong class="font-semibold">লাইভ কোর্স –</strong> স্কিল ডেভেলপমেন্টের জন্য আমাদের এক্সপার্টদের দ্বারা পরিচালিত লাইভ কোর্স।</li>
-                                    <li><strong class="font-semibold">সাবস্ক্রিপশন সার্ভিস –</strong> ChatGPT Plus, Canva Pro, Envato Elements-এর মতো প্রিমিয়াম সাবস্ক্রিপশন সহজ ও সাশ্রয়ী দামে।</li>
-                                    <li><strong class="font-semibold">সফটওয়্যার –</strong> প্রয়োজনীয় ইউটিলিটি সফটওয়্যার, প্রোডাক্টিভিটি টুলস ইত্যাদি।</li>
-                                    <li><strong class="font-semibold">ইবুক –</strong> ব্যাবসা, মার্কেটিং, ফ্রিল্যান্সিং ও স্কিল ডেভেলপমেন্ট ভিত্তিক ইবুক।</li>
-                                    <li><strong class="font-semibold">টেমপ্লেট –</strong> ডিজাইন, প্রেজেন্টেশন, মার্কেটিং বা সোশ্যাল মিডিয়ার জন্য কাস্টম টেমপ্লেট।</li>
-                                </ul>
-                            </div>
-                            <div class="pt-2">
-                                <h2 class="text-2xl font-bold text-gray-800 mb-3">আমাদের মিশন:</h2>
-                                <p class="text-lg text-gray-700">"প্রযুক্তিকে কাজে লাগিয়ে মানুষের জীবন সহজ করা এবং ডিজিটাল বাংলাদেশ গঠনে অবদান রাখা।"</p>
-                            </div>
-                            <div class="pt-2">
-                                <h2 class="text-2xl font-bold text-gray-800 mb-3">আমাদের লক্ষ্য:</h2>
-                                <ul class="list-disc list-inside space-y-2 text-gray-700 pl-4">
-                                    <li>সাশ্রয়ী দামে মানসম্পন্ন ডিজিটাল পণ্য</li>
-                                    <li>নতুনদের জন্য সহজ শেখার সুযোগ</li>
-                                    <li>সময়োপযোগী ও নিরাপদ সাপোর্ট সিস্টেম</li>
-                                </ul>
-                            </div>
-                        </div>
+                        <div class="space-y-8 preserve-whitespace" v-html="formattedPageContent('about-us')"></div>
                     </div>
                 </div>
                 
                 <div v-if="currentView === 'privacyPolicy'" class="bg-white min-h-screen">
                     <div class="container mx-auto max-w-4xl p-6 md:p-12">
-                        <div class="space-y-8">
-                            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 text-center border-b pb-4">Privacy Policy</h1>
-                            <p class="text-center text-gray-600">Submonth-এ আমরা আপনার গোপনীয়তাকে অত্যন্ত গুরুত্ব দিয়ে থাকি। আমাদের কাছে আপনি যেসব তথ্য প্রদান করেন, তা নিরাপদ রাখার জন্য আমরা প্রতিশ্রুতিবদ্ধ।</p>
-                            <div class="space-y-6">
-                                <div>
-                                    <h2 class="text-2xl font-bold text-gray-800 mb-2">১. আমরা যেসব তথ্য সংগ্রহ করি:</h2>
-                                    <p class="text-gray-700">আপনার অর্ডার প্রসেস এবং উন্নত সেবা প্রদানের জন্য আমরা সাধারণত নিম্নলিখিত তথ্য সংগ্রহ করি: নাম, ইমেইল, ফোন নম্বর এবং পেমেন্ট তথ্য।</p>
-                                </div>
-                                <div>
-                                    <h2 class="text-2xl font-bold text-gray-800 mb-2">২. তথ্যের ব্যবহার:</h2>
-                                     <ul class="list-disc list-inside space-y-2 text-gray-700 pl-4">
-                                        <li>আপনার অর্ডার সম্পাদন করা, পণ্যের এক্সেস প্রদান, এবং কাস্টমার সাপোর্টে সহায়তা করার জন্য।</li>
-                                        <li>আপনার সম্মতিতে আপনাকে আমাদের নতুন অফার, নতুন পণ্য ও বিভিন্ন আপডেট পাঠানোর জন্য।</li>
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h2 class="text-2xl font-bold text-gray-800 mb-2">৩. তৃতীয় পক্ষের সাথে তথ্য ভাগাভাগি:</h2>
-                                     <p class="text-gray-700">আমরা আপনার কোনো ব্যক্তিগত তথ্য তৃতীয় পক্ষের সাথে বিক্রি বা শেয়ার করি না। তবে, নির্দিষ্ট প্রযুক্তিগত (যেমন পেমেন্ট গেটওয়ে) এবং আইনি পরিস্থিতিতে সীমাবদ্ধ তথ্য শেয়ার করা বাধ্যতামূলক হতে পারে।</p>
-                                </div>
-                                <div>
-                                    <h2 class="text-2xl font-bold text-gray-800 mb-2">৪. তথ্য সুরক্ষা:</h2>
-                                     <ul class="list-disc list-inside space-y-2 text-gray-700 pl-4">
-                                       <li>আপনার তথ্য সুরক্ষিত রাখতে আমরা আধুনিক এনক্রিপশন প্রযুক্তি ও সুরক্ষিত সার্ভার ব্যবহার করি।</li>
-                                       <li>আপনি যেকোনো সময় আপনার তথ্য সংশোধন বা আমাদের ডেটাবেস থেকে মুছে ফেলার জন্য অনুরোধ করতে পারেন।</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
+                        <div class="space-y-8 preserve-whitespace" v-html="formattedPageContent('privacy-policy')"></div>
                     </div>
                 </div>
 
                 <div v-if="currentView === 'termsAndConditions'" class="bg-white min-h-screen">
                      <div class="container mx-auto max-w-4xl p-6 md:p-12">
-                        <div class="space-y-8">
-                            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 text-center border-b pb-4">Terms and Conditions</h1>
-                            <p class="text-center text-gray-600">এই শর্তাবলীতে আপনাকে স্বাগতম। Submonth পরিচালিত ওয়েবসাইট, পণ্য এবং পরিষেবাগুলোর ব্যবহার করার পূর্বে নিচের শর্তগুলো মনোযোগসহকারে পড়ে নিন।</p>
-                            <div class="space-y-6">
-                                <div>
-                                    <h2 class="text-2xl font-bold text-gray-800 mb-2">১. পরিষেবার গ্রহণযোগ্যতা:</h2>
-                                    <ul class="list-disc list-inside space-y-2 text-gray-700 pl-4">
-                                        <li>আপনি যদি ১৮ বছর বা তদূর্ধ্ব হন বা আপনার অভিভাবকের অনুমতি নিয়ে ওয়েবসাইটটি ব্যবহার করেন, তাহলেই আপনি আমাদের পরিষেবা গ্রহণ করতে পারবেন।</li>
-                                        <li>আমাদের কোনো কোর্স, ইবুক, সফটওয়্যার, বা টেমপ্লেট অবৈধ বা অননুমোদিত কাজে ব্যবহার করা যাবে না।</li>
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h2 class="text-2xl font-bold text-gray-800 mb-2">২. ডিজিটাল পণ্যের মালিকানা:</h2>
-                                     <ul class="list-disc list-inside space-y-2 text-gray-700 pl-4">
-                                        <li>আপনি Submonth-এর কাছ থেকে কোনো পণ্য ক্রয়ের মাধ্যমে সেটির কপিরাইট বা মালিকানা লাভ করছেন না।</li>
-                                        <li>প্রতিটি পণ্য বা কোর্স শুধুমাত্র আপনার ব্যক্তিগত ব্যবহারের জন্য বরাদ্দ, তা অন্য কারো সাথে শেয়ার, বিক্রি বা বিতরণ করা যাবে না।</li>
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h2 class="text-2xl font-bold text-gray-800 mb-2">৩. পেমেন্ট ও অর্ডার প্রসেস:</h2>
-                                     <ul class="list-disc list-inside space-y-2 text-gray-700 pl-4">
-                                        <li>আপনি আমাদের ওয়েবসাইটে পেমেন্ট সম্পন্ন করার পর সংশ্লিষ্ট পণ্য বা সেবার লিংক বা এক্সেস তথ্য ইমেইলের মাধ্যমে বা অ্যাকাউন্টে সরবরাহ করা হবে।</li>
-                                        <li>কোনো কারণে যদি পণ্য সরবরাহে বিলম্ব হয়, আমরা যথাযথভাবে আপনাকে অবহিত করবো।</li>
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h2 class="text-2xl font-bold text-gray-800 mb-2">৪. আচরণবিধি:</h2>
-                                     <ul class="list-disc list-inside space-y-2 text-gray-700 pl-4">
-                                       <li>Submonth-এর কোর্স বা লাইভ সেশনে কোনো প্রকার অপমানজনক ভাষা, হেনস্তা, বা অবাঞ্চিত আচরণ গ্রহণযোগ্য নয়।</li>
-                                       <li>যেকোনো সন্দেহজনক বা অসৎ আচরণের জন্য আপনার অ্যাক্সেস সাময়িক বা স্থায়ীভাবে বাতিল করা হতে পারে।</li>
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h2 class="text-2xl font-bold text-gray-800 mb-2">৫. পরিবর্তন ও আপডেট:</h2>
-                                    <p class="text-gray-700">Submonth যে কোনো সময় এই শর্তাবলী পরিবর্তন বা আপডেট করার অধিকার রাখে। নতুন শর্তাবলী আমাদের ওয়েবসাইটে প্রকাশের মাধ্যমে কার্যকর হবে।</p>
-                                </div>
-                            </div>
-                        </div>
+                        <div class="space-y-8 preserve-whitespace" v-html="formattedPageContent('terms-and-conditions')"></div>
                     </div>
                 </div>
 
                 <div v-if="currentView === 'refundPolicy'" class="bg-white min-h-screen">
                     <div class="container mx-auto max-w-4xl p-6 md:p-12">
-                        <div class="space-y-8">
-                            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 text-center border-b pb-4">Refund Policy</h1>
-                            <p class="text-center text-gray-600">আমরা গ্রাহক সন্তুষ্টিকে সর্বোচ্চ গুরুত্ব দিই। তবে আমাদের পণ্য ডিজিটাল হওয়ায় রিফান্ড নীতির জন্য নির্দিষ্ট নিয়ম রয়েছে:</p>
-                            <div class="space-y-6">
-                                <div>
-                                    <h2 class="text-2xl font-bold text-gray-800 mb-2">১. ফেরতযোগ্য পণ্য:</h2>
-                                    <p class="text-gray-700">যদি আপনি ভুল ডিজিটাল পণ্য পান বা লিংকে প্রবেশ করতে না পারেন এবং আমাদের সাপোর্ট টিম আপনার সমস্যার সমাধান ৭২ ঘন্টার মধ্যে করতে ব্যর্থ হয়, তাহলে আপনি সম্পূর্ণ রিফান্ডের জন্য আবেদন করতে পারেন।</p>
-                                </div>
-                                <div>
-                                    <h2 class="text-2xl font-bold text-gray-800 mb-2">২. ফেরতযোগ্য নয় এমন পণ্য:</h2>
-                                     <ul class="list-disc list-inside space-y-2 text-gray-700 pl-4">
-                                        <li>আপনি যদি ইবুক সফলভাবে ডাউনলোড করে ফেলেন, লাইভ কোর্সে অংশগ্রহণ করেন বা কোনো সফটওয়্যার একটিভ করেন, তাহলে সেই পণ্যটি ফেরতযোগ্য বলে গণ্য হবে না।</li>
-                                        <li>যেকোনো সাবস্ক্রিপশন চালু হওয়ার পর তা বাতিল করে রিফান্ড চাওয়া যাবে না।</li>
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h2 class="text-2xl font-bold text-gray-800 mb-2">৩. রিফান্ড প্রসেস:</h2>
-                                     <ul class="list-disc list-inside space-y-2 text-gray-700 pl-4">
-                                        <li>রিফান্ডের জন্য আপনাকে আমাদের অফিসিয়াল WhatsApp নম্বরে যোগাযোগ করতে হবে: 
-                                            <a href="https://wa.me/<?= htmlspecialchars($contact_info['whatsapp']) ?>" target="_blank" class="text-[var(--primary-color)] font-semibold hover:underline">+<?= htmlspecialchars($contact_info['phone']) ?></a>
-                                        </li>
-                                        <li>আপনার আবেদন রিভিউ করে ২-৩ কার্যদিবসের মধ্যে আপনার টাকা পেমেন্টকৃত মাধ্যমে ফেরত পাঠানো হবে।</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
+                        <div class="space-y-8 preserve-whitespace" v-html="formattedPageContent('refund-policy')"></div>
                     </div>
                 </div>
             </div>
@@ -1078,6 +971,7 @@ if ($request_path) {
                     basePath: '<?= BASE_PATH ?>',
                     allProducts: <?= json_encode($all_products_flat) ?>,
                     allCoupons: <?= json_encode($all_coupons_data) ?>,
+                    pagesContent: <?= json_encode($pages_content) ?>,
                     paymentMethods: <?= json_encode($payment_methods) ?>,
                     usdRate: <?= $usd_to_bdt_rate ?>,
                     currentView: '<?= $initial_view ?>',
@@ -1154,6 +1048,10 @@ if ($request_path) {
                 }
             },
             methods: {
+                formattedPageContent(slug) {
+                    const content = this.pagesContent[slug] || '';
+                    return content.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
+                },
                 formatPrice(bdtPrice) { if (this.currency === 'USD') { if (!bdtPrice || !this.usdRate) return '$0.00'; const usdPrice = bdtPrice / this.usdRate; return '$' + usdPrice.toFixed(2); } return '৳' + Number(bdtPrice).toFixed(2); },
                 toggleCurrency() { this.currency = (this.currency === 'BDT') ? 'USD' : 'BDT'; localStorage.setItem('submonthCurrency', this.currency); },
                 showModal(title, message, type = 'info', onOkCallback = null) { this.modal = { visible: true, title, message, type, onOk: onOkCallback }; },
